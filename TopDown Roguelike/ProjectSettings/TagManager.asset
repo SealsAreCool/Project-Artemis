@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!78 &1
+TagManager:
+  serializedVersion: 2
+  tags:
+  - Enemy
+  - Bullet
+  - Weapon
+  - Wall
+  - Top
+  - Bottom
+  - Right
+  - Left
+  layers:
+  - Default
+  - TransparentFX
+  - Ignore Raycast
+  - Player
+  - Water
+  - UI
+  - Environment
+  - Projectiles
+  - Walls
+  - Fog
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  m_SortingLayers:
+  - name: Default
+    uniqueID: 0
+    locked: 0
+  - name: UI
+    uniqueID: 1682486221
+    locked: 0
+  - name: Vision
+    uniqueID: 541057833
+    locked: 0
+  - name: Fog
+    uniqueID: 1426594021
+    locked: 0
+  - name: Environment
+    uniqueID: 2200258545
+    locked: 0
