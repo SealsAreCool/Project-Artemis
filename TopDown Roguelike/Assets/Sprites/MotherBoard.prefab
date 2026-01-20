@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2263468554641369620}
   - component: {fileID: 8565169870698777824}
   - component: {fileID: 5739310534393775826}
+  - component: {fileID: -5608076177250056339}
   m_Layer: 0
   m_Name: MotherBoard
   m_TagString: Enemy
@@ -187,7 +188,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isBoss: 1
-  maxHealth: 100000
+  maxHealth: 30
 --- !u!114 &8565169870698777824
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -221,20 +222,35 @@ MonoBehaviour:
   shootPoint: {fileID: 4153180080206611726}
   rb: {fileID: 7406651085841274313}
   idleSpeed: 2
-  floatStrength: 1.2
-  floatChangeTime: 2
-  dashSpeed: 15
-  dashDuration: 1.2
-  dashCooldown: 2
+  floatStrength: 1
+  floatChangeTime: 0.5
+  dashSpeed: 50
+  dashDuration: 3
+  dashCooldown: 1
   fanBulletSpeed: 8
   fanBulletCount: 7
   fanCooldown: 2
   ringBulletSpeed: 6
   ringBulletCount: 12
-  ringCooldown: 3
-  spawnCount: 3
+  ringCooldown: 2
+  spawnCount: 2
   spawnRadius: 2
-  spawnCooldown: 4
+  spawnCooldown: 2
+--- !u!114 &-5608076177250056339
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032007440137695842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa7ee2d15ee8fe2439063b593e27c3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offset: {x: 0, y: -4}
+  size: {x: 1, y: 0.5}
+  color: {r: 0, g: 0, b: 0, a: 0.3}
 --- !u!1 &9160703158663637445
 GameObject:
   m_ObjectHideFlags: 0

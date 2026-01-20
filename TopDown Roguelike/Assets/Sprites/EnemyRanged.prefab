@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 1419114914705285902}
   - component: {fileID: 6106182771177492986}
   - component: {fileID: -8847799449622426625}
+  - component: {fileID: -2545842852931068532}
   m_Layer: 0
   m_Name: EnemyRanged
   m_TagString: Enemy
@@ -249,6 +250,21 @@ MonoBehaviour:
   firePoint: {fileID: 4153180080206611726}
   fireCooldown: 2
   projectileSpeed: 30
+--- !u!114 &-2545842852931068532
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032007440137695842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fa7ee2d15ee8fe2439063b593e27c3f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offset: {x: 0, y: -0.2}
+  size: {x: 1, y: 0.5}
+  color: {r: 0, g: 0, b: 0, a: 0.3}
 --- !u!1 &9160703158663637445
 GameObject:
   m_ObjectHideFlags: 0
