@@ -123,7 +123,7 @@ public class FloatingRangedEnemy : MonoBehaviour
         MoveWithWallCheck(dashDirection * dashSpeed, true);
     }
 
-    // 🔑 THIS IS THE CORE FIX
+
     void MoveWithWallCheck(Vector2 velocity, bool isDash = false)
     {
         float distance = velocity.magnitude * Time.fixedDeltaTime;
@@ -145,7 +145,7 @@ public class FloatingRangedEnemy : MonoBehaviour
                 return;
             }
 
-            // Slide along wall
+
             Vector2 slideDir = Vector2.Perpendicular(hit.normal);
             rb.velocity = slideDir * velocity.magnitude * 0.5f;
         }

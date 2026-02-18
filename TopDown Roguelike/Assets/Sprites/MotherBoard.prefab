@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 8565169870698777824}
   - component: {fileID: 5739310534393775826}
   - component: {fileID: -5608076177250056339}
+  - component: {fileID: 7100481622722673404}
   m_Layer: 0
   m_Name: MotherBoard
   m_TagString: Enemy
@@ -224,6 +225,9 @@ MonoBehaviour:
   idleSpeed: 2
   floatStrength: 1
   floatChangeTime: 0.5
+  laser: {fileID: 7100481622722673404}
+  laserDuration: 3
+  laserCooldown: 4
   dashSpeed: 50
   dashDuration: 3
   dashCooldown: 1
@@ -251,6 +255,33 @@ MonoBehaviour:
   offset: {x: 0, y: -4}
   size: {x: 1, y: 0.5}
   color: {r: 0, g: 0, b: 0, a: 0.3}
+--- !u!114 &7100481622722673404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4032007440137695842}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dee37ccf71f53646bfe0eff19619c35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  eye: {fileID: 4153180080206611726}
+  startPrefab: {fileID: 7676890725816447614, guid: 85f03f51da45dea4b81688b116490d85, type: 3}
+  middlePrefab: {fileID: 176630926984894487, guid: b7dab0e49e41241479a7c56b810b9fe6, type: 3}
+  endPrefab: {fileID: 3088446011176800916, guid: 5f48348776f406d48a862e89fdb150bf, type: 3}
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  damagePerHit: 1
+  sweepSpeed: 50
+  telegraphDuration: 1.2
+  currentAngle: 0
+  firing: 0
 --- !u!1 &9160703158663637445
 GameObject:
   m_ObjectHideFlags: 0

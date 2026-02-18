@@ -11,6 +11,7 @@ public class DroneBoss2D : MonoBehaviour
         FanShot,
         RingShot,
         SpawnDrones,
+        Laser,
         Cooldown
     }
 
@@ -24,6 +25,12 @@ public class DroneBoss2D : MonoBehaviour
     public float idleSpeed = 2f;
     public float floatStrength = 1.2f;
     public float floatChangeTime = 2f;
+
+    [Header("Laser")]
+    public BossLaser laser;
+    public float laserDuration = 3f;
+    public float laserCooldown = 4f;
+
 
     [Header("Dash")]
     public float dashSpeed = 15f;
@@ -81,6 +88,16 @@ public class DroneBoss2D : MonoBehaviour
                 if (cooldownTimer <= 0f)
                     EnterIdle();
                 break;
+            case BossState.Laser:
+                if (stateTimer >= laserDuration)
+                {
+                    laser.EndLaser();
+                    EnterCooldown(laserCooldown);
+                }
+                break;
+
+    break;
+
         }
     }
 
@@ -115,13 +132,14 @@ public class DroneBoss2D : MonoBehaviour
     {
         stateTimer = 0f;
 
-        int choice = Random.Range(0, 4);
+        int choice = Random.Range(4, 5);
         switch (choice)
         {
             case 0: EnterDash(); break;
             case 1: FireFan(); EnterCooldown(fanCooldown); break;
             case 2: FireRing(); EnterCooldown(ringCooldown); break;
             case 3: SpawnDrones(); EnterCooldown(spawnCooldown); break;
+            case 4: EnterLaser(); break;
         }
     }
 
@@ -190,6 +208,14 @@ void RotateToVelocity()
             if (rb.velocity.sqrMagnitude < 0.01f) return;
             targetAngle = Mathf.Atan2(rb.velocity.y, rb.velocity.x) * Mathf.Rad2Deg;
             break;
+        case BossState.Laser:
+            if (laser != null && laser.firing) 
+            {
+                targetAngle = laser.currentAngle; 
+            }
+            break;
+    return;
+
     }
 
     rb.rotation = Mathf.LerpAngle(rb.rotation, targetAngle, 15f * Time.fixedDeltaTime);
@@ -250,6 +276,13 @@ void ShootBullet(Vector2 dir, float speed)
 
     float angle = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
     bullet.transform.rotation = Quaternion.Euler(0, 0, angle);
+}
+void EnterLaser()
+{
+    currentState = BossState.Laser;
+    stateTimer = 0f;
+    rb.velocity = Vector2.zero;
+    laser.BeginTelegraph();
 }
 
 }
