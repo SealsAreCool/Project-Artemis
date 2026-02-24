@@ -36,6 +36,10 @@ public class DroneBoss2D : MonoBehaviour
     public float dashSpeed = 15f;
     public float dashDuration = 1.2f;
     public float dashCooldown = 2f;
+    public GameObject afterimagePrefab;
+    public int afterimageCount = 5;
+    public float afterimageSpacing = 0.05f;
+    public float afterimageFadeTime = 0.4f;
 
     [Header("Fan Attack")]
     public float fanBulletSpeed = 8f;
@@ -132,7 +136,7 @@ public class DroneBoss2D : MonoBehaviour
     {
         stateTimer = 0f;
 
-        int choice = Random.Range(4, 5);
+        int choice = Random.Range(0, 5);
         switch (choice)
         {
             case 0: EnterDash(); break;
@@ -143,14 +147,43 @@ public class DroneBoss2D : MonoBehaviour
         }
     }
 
-    void EnterDash()
-    {
-        currentState = BossState.Dash;
-        stateTimer = 0f;
+void EnterDash()
+{
+    currentState = BossState.Dash;
+    stateTimer = 0f;
 
-        if (player != null)
-            moveDirection = (player.position - transform.position).normalized;
+    if (player != null)
+        moveDirection = (player.position - transform.position).normalized;
+
+    StartCoroutine(DashAfterimages());
+}
+
+IEnumerator DashAfterimages()
+{
+    for(int i = 0; i < afterimageCount; i++)
+    {
+        GameObject img = Instantiate(afterimagePrefab, transform.position, transform.rotation);
+        img.transform.localScale = transform.localScale;
+        StartCoroutine(FadeAfterimage(img.GetComponent<SpriteRenderer>()));
+        yield return new WaitForSeconds(afterimageSpacing);
     }
+}
+
+IEnumerator FadeAfterimage(SpriteRenderer sr)
+{
+    float t = 0f;
+    Color c = sr.color;
+
+    while(t < afterimageFadeTime)
+    {
+        t += Time.deltaTime;
+        float a = Mathf.Lerp(c.a, 0f, t / afterimageFadeTime);
+        sr.color = new Color(c.r, c.g, c.b, a);
+        yield return null;
+    }
+
+    Destroy(sr.gameObject);
+}
 
     void EnterCooldown(float time)
     {

@@ -82,7 +82,7 @@ SpriteRenderer:
   m_SortingLayerID: -2094708751
   m_SortingLayer: 4
   m_SortingOrder: 6
-  m_Sprite: {fileID: 21300000, guid: 55be3fea61be5a040925e261245a9abb, type: 3}
+  m_Sprite: {fileID: -434761965, guid: 4b696b10612e19a45a3af5888527ad7d, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -175,7 +175,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 1
+  m_Radius: 2
 --- !u!114 &2263468554641369620
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -280,6 +280,10 @@ MonoBehaviour:
   damagePerHit: 1
   sweepSpeed: 50
   telegraphDuration: 1.2
+  startLocalOffset: {x: 1.17, y: -0.3}
+  middleLocalOffset: {x: 1.8, y: -0.3}
+  middleExtra: 1.5
+  endInset: -0.9
   currentAngle: 0
   firing: 0
 --- !u!1 &9160703158663637445
