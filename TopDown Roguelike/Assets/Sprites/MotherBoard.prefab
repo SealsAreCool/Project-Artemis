@@ -228,9 +228,13 @@ MonoBehaviour:
   laser: {fileID: 7100481622722673404}
   laserDuration: 3
   laserCooldown: 4
-  dashSpeed: 50
+  dashSpeed: 75
   dashDuration: 3
   dashCooldown: 1
+  afterimagePrefab: {fileID: 6604825687858310470, guid: c29080e782718314aa3b4c10ed5b1959, type: 3}
+  afterimageCount: 1
+  afterimageSpacing: 30
+  afterimageFadeTime: 0.15
   fanBulletSpeed: 8
   fanBulletCount: 7
   fanCooldown: 2

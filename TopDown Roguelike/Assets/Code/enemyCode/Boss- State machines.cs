@@ -40,6 +40,7 @@ public class DroneBoss2D : MonoBehaviour
     public int afterimageCount = 5;
     public float afterimageSpacing = 0.05f;
     public float afterimageFadeTime = 0.4f;
+    Vector2 lastPos;
 
     [Header("Fan Attack")]
     public float fanBulletSpeed = 8f;
@@ -136,7 +137,7 @@ public class DroneBoss2D : MonoBehaviour
     {
         stateTimer = 0f;
 
-        int choice = Random.Range(0, 5);
+        int choice = Random.Range(0, 1);
         switch (choice)
         {
             case 0: EnterDash(); break;
@@ -160,13 +161,33 @@ void EnterDash()
 
 IEnumerator DashAfterimages()
 {
-    for(int i = 0; i < afterimageCount; i++)
+    lastPos = transform.position;
+
+    while (currentState == BossState.Dash)
     {
-        GameObject img = Instantiate(afterimagePrefab, transform.position, transform.rotation);
-        img.transform.localScale = transform.localScale;
-        StartCoroutine(FadeAfterimage(img.GetComponent<SpriteRenderer>()));
-        yield return new WaitForSeconds(afterimageSpacing);
+        if (Vector2.Distance(transform.position, lastPos) > 0.2f)
+        {
+            SpawnAfterimage();
+            lastPos = transform.position;
+        }
+
+        yield return null;
     }
+}
+
+void SpawnAfterimage()
+{
+    GameObject img = Instantiate(afterimagePrefab, transform.position, transform.rotation);
+    img.transform.localScale = transform.localScale;
+
+    SpriteRenderer bossSR = GetComponent<SpriteRenderer>();
+    SpriteRenderer imgSR = img.GetComponent<SpriteRenderer>();
+
+    imgSR.sprite = bossSR.sprite;
+    imgSR.flipX = bossSR.flipX;
+    imgSR.flipY = bossSR.flipY;
+
+    StartCoroutine(FadeAfterimage(imgSR));
 }
 
 IEnumerator FadeAfterimage(SpriteRenderer sr)
