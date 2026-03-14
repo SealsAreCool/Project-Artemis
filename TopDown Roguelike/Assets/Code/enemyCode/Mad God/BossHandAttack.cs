@@ -19,14 +19,17 @@ public class BossHandAttack : MonoBehaviour
     public int queenBulletCount = 16;
     public float queenBulletSpeed = 6f;
 
-    public bool isAttacking;
-
     SpriteRenderer sr;
     Collider2D col;
     Animator animator;
 
     Vector3 originalPos;
     Sprite originalSprite;
+
+    public float tremorSpeed = 4f;
+public float tremorSpacing = 1.2f;
+public int tremorSteps = 8;
+public LayerMask wallMask;
 
     void Awake()
     {
@@ -40,18 +43,19 @@ public class BossHandAttack : MonoBehaviour
 
     public IEnumerator SmashRoutine(Vector3 landingSpot)
     {
-        if(isAttacking) yield break;
-
-        isAttacking=true;
-
         if(animator)
             animator.SetTrigger("MakeFist");
 
         yield return new WaitForSeconds(0.5f);
 
+        if(animator) animator.enabled=false;
+
         if(col) col.enabled=false;
 
-        Vector3 start = new Vector3(landingSpot.x,landingSpot.y+spawnHeight,transform.position.z);
+        Vector3 start = new Vector3(
+            landingSpot.x,
+            landingSpot.y+spawnHeight,
+            transform.position.z);
 
         sr.enabled=false;
         yield return new WaitForSeconds(disappearDelay);
@@ -70,9 +74,12 @@ public class BossHandAttack : MonoBehaviour
         {
             vel+=gravity*Time.deltaTime;
 
-            float newY=Mathf.Max(transform.position.y-vel*Time.deltaTime,landingSpot.y);
+            float newY=Mathf.Max(
+                transform.position.y-vel*Time.deltaTime,
+                landingSpot.y);
 
-            transform.position=new Vector3(landingSpot.x,newY,transform.position.z);
+            transform.position=new Vector3(
+                landingSpot.x,newY,transform.position.z);
 
             yield return null;
         }
@@ -82,14 +89,10 @@ public class BossHandAttack : MonoBehaviour
         yield return new WaitForSeconds(impactDelay);
 
         transform.localPosition=originalPos;
+
         sr.sprite=originalSprite;
 
-        isAttacking=false;
-    }
-
-    public void ResetSprite()
-    {
-        sr.sprite = originalSprite;
+        if(animator) animator.enabled=true;
     }
 
     public void SmallSmash(Vector3 pos)
@@ -105,34 +108,51 @@ public class BossHandAttack : MonoBehaviour
         Instantiate(miniHandPrefab,pos+Vector3.right*2,Quaternion.identity);
     }
 
-    public void SpawnTremors(Vector3 center)
+public void SpawnTremors(Vector3 center)
+{
+    Vector2[] dirs =
     {
-        if(!tremorSprite) return;
+        Vector2.up,Vector2.down,Vector2.left,Vector2.right,
+        new Vector2(1,1).normalized,
+        new Vector2(-1,1).normalized,
+        new Vector2(1,-1).normalized,
+        new Vector2(-1,-1).normalized
+    };
 
-        Vector2[] dirs =
-        {
-            Vector2.up,Vector2.down,Vector2.left,Vector2.right,
-            new Vector2(1,1).normalized,
-            new Vector2(-1,1).normalized,
-            new Vector2(1,-1).normalized,
-            new Vector2(-1,-1).normalized
-        };
-
-        foreach(Vector2 d in dirs)
-        {
-            GameObject g=new GameObject("Tremor");
-
-            SpriteRenderer s=g.AddComponent<SpriteRenderer>();
-            s.sprite=tremorSprite;
-
-            s.sortingLayerID=sr.sortingLayerID;
-            s.sortingOrder=sr.sortingOrder+1;
-
-            g.transform.position=center + (Vector3)d*1.5f;
-
-            Destroy(g,1f);
-        }
+    foreach(Vector2 dir in dirs)
+    {
+        StartCoroutine(TremorChain(center,dir));
     }
+}
+
+IEnumerator TremorChain(Vector3 start, Vector2 dir)
+{
+    Vector3 pos = start;
+
+    for(int i=0;i<tremorSteps;i++)
+    {
+        RaycastHit2D hit = Physics2D.Raycast(pos,dir,tremorSpacing,wallMask);
+
+        if(hit.collider != null)
+            yield break;
+
+        pos += (Vector3)dir * tremorSpacing;
+
+        GameObject g = new GameObject("Tremor");
+
+        SpriteRenderer s = g.AddComponent<SpriteRenderer>();
+        s.sprite = tremorSprite;
+
+        s.sortingLayerID = sr.sortingLayerID;
+        s.sortingOrder = sr.sortingOrder + 1;
+
+        g.transform.position = pos;
+
+        Destroy(g,1.2f);
+
+        yield return new WaitForSeconds(0.07f);
+    }
+}
 
     public void SpawnQueenRing(Vector3 center)
     {

@@ -9,7 +9,7 @@ public class BossAttackController : MonoBehaviour
     public Transform arenaCenter;
     public Vector2 arenaSize = new Vector2(8f,4f);
 
-    public float poundsPerClap = 5;
+    public int poundsPerClap = 5;
     public float timeBetweenPounds = 1.2f;
 
     [Header("Clap")]
@@ -27,8 +27,8 @@ public class BossAttackController : MonoBehaviour
     Card cardA;
     Card cardB;
 
-    GameObject cardObj1;
-    GameObject cardObj2;
+    GameObject card1;
+    GameObject card2;
 
     void Start()
     {
@@ -39,7 +39,7 @@ public class BossAttackController : MonoBehaviour
     {
         while(true)
         {
-            yield return StartCoroutine(ClapSequence());
+            yield return StartCoroutine(Clap());
 
             for(int i=0;i<poundsPerClap;i++)
             {
@@ -49,66 +49,78 @@ public class BossAttackController : MonoBehaviour
         }
     }
 
-    IEnumerator ClapSequence()
+    IEnumerator Clap()
     {
-        leftHand.isAttacking = true;
-        rightHand.isAttacking = true;
-
         SpriteRenderer leftSR = leftHand.GetComponent<SpriteRenderer>();
         SpriteRenderer rightSR = rightHand.GetComponent<SpriteRenderer>();
+
+        Animator leftAnim = leftHand.GetComponent<Animator>();
+        Animator rightAnim = rightHand.GetComponent<Animator>();
+
+        if(leftAnim) leftAnim.enabled = false;
+        if(rightAnim) rightAnim.enabled = false;
 
         Vector3 leftStart = leftHand.transform.localPosition;
         Vector3 rightStart = rightHand.transform.localPosition;
 
         float centerX = (leftStart.x + rightStart.x)/2f;
 
-        Vector3 leftClap = new Vector3(centerX - 0.25f,leftStart.y,leftStart.z);
-        Vector3 rightClap = new Vector3(centerX + 0.25f,rightStart.y,rightStart.z);
+        Vector3 leftTarget = new Vector3(centerX-0.25f,leftStart.y,leftStart.z);
+        Vector3 rightTarget = new Vector3(centerX+0.25f,rightStart.y,rightStart.z);
 
-        if(leftClapSprite) leftSR.sprite = leftClapSprite;
-        if(rightClapSprite) rightSR.sprite = rightClapSprite;
+        leftSR.sprite = leftClapSprite;
+        rightSR.sprite = rightClapSprite;
 
-        float duration = Vector3.Distance(leftStart,leftClap)/clapSpeed;
+        float duration = Vector3.Distance(leftStart,leftTarget)/clapSpeed;
 
         float t=0;
-        while(t<1)
+
+        while(t<1f)
         {
             t+=Time.deltaTime/duration;
 
-            leftHand.transform.localPosition = Vector3.Lerp(leftStart,leftClap,t);
-            rightHand.transform.localPosition = Vector3.Lerp(rightStart,rightClap,t);
+            leftHand.transform.localPosition = Vector3.Lerp(leftStart,leftTarget,t);
+            rightHand.transform.localPosition = Vector3.Lerp(rightStart,rightTarget,t);
+
+            // rotation animation restored
+            leftHand.transform.rotation = Quaternion.Euler(0,0,Mathf.Lerp(30f,0f,t));
+            rightHand.transform.rotation = Quaternion.Euler(0,0,Mathf.Lerp(-30f,0f,t));
 
             yield return null;
         }
 
-        Vector3 cardCenter = (leftHand.transform.position+rightHand.transform.position)/2;
+        Vector3 center = (leftHand.transform.position + rightHand.transform.position)/2;
 
-        SpawnCards(cardCenter);
+        SpawnCards(center);
 
         yield return new WaitForSeconds(clapHoldTime);
 
         t=0;
-        while(t<1)
+
+        while(t<1f)
         {
             t+=Time.deltaTime/duration;
 
-            leftHand.transform.localPosition = Vector3.Lerp(leftClap,leftStart,t);
-            rightHand.transform.localPosition = Vector3.Lerp(rightClap,rightStart,t);
+            leftHand.transform.localPosition = Vector3.Lerp(leftTarget,leftStart,t);
+            rightHand.transform.localPosition = Vector3.Lerp(rightTarget,rightStart,t);
+
+            leftHand.transform.rotation = Quaternion.Euler(0,0,Mathf.Lerp(0f,30f,t));
+            rightHand.transform.rotation = Quaternion.Euler(0,0,Mathf.Lerp(0f,-30f,t));
 
             yield return null;
         }
 
-        leftHand.ResetSprite();
-        rightHand.ResetSprite();
+        leftHand.transform.rotation = Quaternion.identity;
+        rightHand.transform.rotation = Quaternion.identity;
 
-        leftHand.isAttacking=false;
-        rightHand.isAttacking=false;
+        if(leftAnim) leftAnim.enabled = true;
+        if(rightAnim) rightAnim.enabled = true;
 
-        if(cardObj1) Destroy(cardObj1);
-        if(cardObj2) Destroy(cardObj2);
+        if(card1) Destroy(card1);
+        if(card2) Destroy(card2);
     }
 
-    void SpawnCards(Vector3 pos)
+    void SpawnCards(Vector3 center)
     {
         int a = Random.Range(0,4);
         int b = Random.Range(0,4);
@@ -116,8 +128,8 @@ public class BossAttackController : MonoBehaviour
         cardA = (Card)a;
         cardB = (Card)b;
 
-        cardObj1 = CreateCard(cardSprites[a],pos + Vector3.left*cardSpacing*0.5f);
-        cardObj2 = CreateCard(cardSprites[b],pos + Vector3.right*cardSpacing*0.5f);
+        card1 = CreateCard(cardSprites[a],center+Vector3.left*cardSpacing*0.5f);
+        card2 = CreateCard(cardSprites[b],center+Vector3.right*cardSpacing*0.5f);
     }
 
     GameObject CreateCard(Sprite sprite,Vector3 pos)
@@ -138,14 +150,9 @@ public class BossAttackController : MonoBehaviour
 
     IEnumerator DoGroundPound()
     {
-        bool useLeft = Random.value<0.5f;
+        BossHandAttack hand = Random.value<0.5f ? leftHand : rightHand;
 
-        BossHandAttack hand = useLeft ? leftHand : rightHand;
-
-        while(hand.isAttacking)
-            yield return null;
-
-        Vector3 target = RandomPoint(useLeft);
+        Vector3 target = RandomPoint(hand==leftHand);
 
         yield return StartCoroutine(hand.SmashRoutine(target));
 
@@ -157,32 +164,31 @@ public class BossAttackController : MonoBehaviour
     {
         switch(card)
         {
-            case Card.Queen:
-                hand.SpawnQueenRing(pos);
-                break;
-
-            case Card.King:
-                hand.SpawnMiniHands(pos);
-                break;
-
-            case Card.Ace:
-                hand.SpawnTremors(pos);
-                break;
-
+            case Card.Queen: hand.SpawnQueenRing(pos); break;
+            case Card.King: hand.SpawnMiniHands(pos); break;
+            case Card.Ace: hand.SpawnTremors(pos); break;
             case Card.Jack:
-                hand.SmallSmash(pos + Vector3.left*1.5f);
-                hand.SmallSmash(pos + Vector3.right*1.5f);
+                hand.SmallSmash(pos+Vector3.left*1.5f);
+                hand.SmallSmash(pos+Vector3.right*1.5f);
                 break;
         }
     }
 
     Vector3 RandomPoint(bool leftSide)
     {
-        float minX = leftSide ? arenaCenter.position.x-arenaSize.x/2 : arenaCenter.position.x;
-        float maxX = leftSide ? arenaCenter.position.x : arenaCenter.position.x+arenaSize.x/2;
+        float minX = leftSide ?
+            arenaCenter.position.x-arenaSize.x/2 :
+            arenaCenter.position.x;
+
+        float maxX = leftSide ?
+            arenaCenter.position.x :
+            arenaCenter.position.x+arenaSize.x/2;
 
         float x = Random.Range(minX,maxX);
-        float y = Random.Range(arenaCenter.position.y-arenaSize.y/2,arenaCenter.position.y+arenaSize.y/2);
+
+        float y = Random.Range(
+            arenaCenter.position.y-arenaSize.y/2,
+            arenaCenter.position.y+arenaSize.y/2);
 
         return new Vector3(x,y,0);
     }
