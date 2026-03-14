@@ -48,9 +48,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d3d66bd4ba4081b4681a2b9401aaab22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  leftHand: {fileID: 3161014001069777860}
-  rightHand: {fileID: 1651185407978363799}
-  attackInterval: 3
+  leftHand: {fileID: 0}
+  rightHand: {fileID: 0}
+  arenaCenter: {fileID: 0}
+  arenaSize: {x: 8, y: 4}
+  poundsPerClap: 5
+  timeBetweenPounds: 1.2
+  clapHoldTime: 0.6
+  clapMoveTime: 0.5
+  timeBetweenClaps: 3
 --- !u!114 &2386935547988312513
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -191,11 +197,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80af0df97d972134d8ebcf58d7f8c515, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arenaCenter: {fileID: 0}
-  arenaSize: {x: 8, y: 4}
-  smashHeight: 6
-  smashSpeed: 20
-  returnSpeed: 10
+  spawnHeight: 8
+  gravity: 40
+  disappearDelay: 0.4
+  preFallDelay: 0.25
+  impactDelay: 0.25
+  fallingSprite: {fileID: -2065786382, guid: 5f8d01ab4b4e7d34d976100bc3c7b4c2, type: 3}
+  miniHandPrefab: {fileID: 0}
+  tremorSprite: {fileID: -2413806693520163455, guid: a8abd0c8487dd664da47268cb6e1849e, type: 3}
+  queenCardSprite: {fileID: -244813015, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
+  queenBulletCount: 16
+  queenBulletSpeed: 6
+  isAttacking: 0
 --- !u!61 &3286180724393425512
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -361,11 +374,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 80af0df97d972134d8ebcf58d7f8c515, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  arenaCenter: {fileID: 0}
-  arenaSize: {x: 8, y: 4}
-  smashHeight: 6
-  smashSpeed: 20
-  returnSpeed: 10
+  spawnHeight: 8
+  gravity: 40
+  disappearDelay: 0.4
+  preFallDelay: 0.25
+  impactDelay: 0.25
+  fallingSprite: {fileID: 1532727162, guid: 5f8d01ab4b4e7d34d976100bc3c7b4c2, type: 3}
+  miniHandPrefab: {fileID: 0}
+  tremorSprite: {fileID: -2413806693520163455, guid: a8abd0c8487dd664da47268cb6e1849e, type: 3}
+  queenCardSprite: {fileID: 686090490, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
+  queenBulletCount: 16
+  queenBulletSpeed: 6
+  isAttacking: 0
 --- !u!61 &1862220351340060871
 BoxCollider2D:
   m_ObjectHideFlags: 0

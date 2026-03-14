@@ -3,154 +3,172 @@ using System.Collections;
 
 public class BossHandAttack : MonoBehaviour
 {
-    public Transform arenaCenter;
-    public Vector2 arenaSize = new Vector2(8f, 4f);
-
-    public float smashHeight = 6f;
+    public float spawnHeight = 6f;
     public float gravity = 40f;
-    public float impactDelay = 0.25f;
 
-    public float floatAmplitude = 0.3f;
-    public float floatSpeed = 1.5f;
+    public float disappearDelay = 0.3f;
+    public float preFallDelay = 0.15f;
+    public float impactDelay = 0.2f;
 
     public Sprite fallingSprite;
-    public float fallingRotation;
-    public Vector2 fallingScale = Vector2.one;
 
-    public GameObject shadowObject;
-    public Vector2 shadowScale = new Vector2(1f, 1f);
+    public GameObject miniHandPrefab;
+    public Sprite tremorSprite;
+    public Sprite queenCardSprite;
 
-    private Vector3 originalPosition;
-    private Vector3 originalScale;
-    private Quaternion originalRotation;
+    public int queenBulletCount = 16;
+    public float queenBulletSpeed = 6f;
 
-    private Animator animator;
-    private SpriteRenderer sr;
-    private Collider2D col;
+    public bool isAttacking;
 
-    private bool isAttacking = false;
+    SpriteRenderer sr;
+    Collider2D col;
+    Animator animator;
 
-    private float idleDirection = 1f;
-    private float idleOffset;
+    Vector3 originalPos;
+    Sprite originalSprite;
 
-    void Start()
+    void Awake()
     {
-        originalPosition = transform.position;
-        originalScale = transform.localScale;
-        originalRotation = transform.rotation;
-
-        animator = GetComponent<Animator>();
         sr = GetComponent<SpriteRenderer>();
         col = GetComponent<Collider2D>();
+        animator = GetComponent<Animator>();
 
-        idleOffset = Random.Range(-floatAmplitude, floatAmplitude);
-
-        if (shadowObject != null)
-            shadowObject.SetActive(false);
+        originalPos = transform.localPosition;
+        originalSprite = sr.sprite;
     }
 
-    void Update()
+    public IEnumerator SmashRoutine(Vector3 landingSpot)
     {
-        if (!isAttacking)
-            LinearIdle();
-    }
+        if(isAttacking) yield break;
 
-    void LinearIdle()
-    {
-        idleOffset += idleDirection * floatSpeed * Time.deltaTime;
+        isAttacking=true;
 
-        if (idleOffset > floatAmplitude)
-        {
-            idleOffset = floatAmplitude;
-            idleDirection = -1f;
-        }
-        else if (idleOffset < -floatAmplitude)
-        {
-            idleOffset = -floatAmplitude;
-            idleDirection = 1f;
-        }
+        if(animator)
+            animator.SetTrigger("MakeFist");
 
-        transform.position = new Vector3(
-            originalPosition.x,
-            originalPosition.y + idleOffset,
-            originalPosition.z
-        );
-    }
-
-    public void StartSmash()
-    {
-        if (!isAttacking)
-            StartCoroutine(SmashRoutine());
-    }
-
-    IEnumerator SmashRoutine()
-    {
-        isAttacking = true;
-
-        animator.SetTrigger("MakeFist");
         yield return new WaitForSeconds(0.5f);
 
-        if (col != null) col.enabled = false;
+        if(col) col.enabled=false;
 
-        float randomX = Random.Range(
-            arenaCenter.position.x - arenaSize.x / 2,
-            arenaCenter.position.x + arenaSize.x / 2
-        );
+        Vector3 start = new Vector3(landingSpot.x,landingSpot.y+spawnHeight,transform.position.z);
 
-        float randomY = Random.Range(
-            arenaCenter.position.y - arenaSize.y / 2,
-            arenaCenter.position.y + arenaSize.y / 2
-        );
+        sr.enabled=false;
+        yield return new WaitForSeconds(disappearDelay);
 
-        Vector3 landingSpot = new Vector3(randomX, randomY, 0);
+        transform.position=start;
+        sr.enabled=true;
 
-        if (shadowObject != null)
+        if(fallingSprite)
+            sr.sprite=fallingSprite;
+
+        yield return new WaitForSeconds(preFallDelay);
+
+        float vel=0;
+
+        while(transform.position.y>landingSpot.y)
         {
-            shadowObject.transform.position = landingSpot;
-            shadowObject.transform.localScale = new Vector3(shadowScale.x, shadowScale.y, 1f);
-            shadowObject.SetActive(true);
-        }
+            vel+=gravity*Time.deltaTime;
 
-        Vector3 startPos = new Vector3(
-            landingSpot.x,
-            landingSpot.y + smashHeight,
-            landingSpot.z
-        );
+            float newY=Mathf.Max(transform.position.y-vel*Time.deltaTime,landingSpot.y);
 
-        transform.position = startPos;
+            transform.position=new Vector3(landingSpot.x,newY,transform.position.z);
 
-        animator.enabled = false;
-
-        if (fallingSprite != null)
-            sr.sprite = fallingSprite;
-
-        transform.localScale = new Vector3(fallingScale.x, fallingScale.y, 1f);
-        transform.rotation = Quaternion.Euler(0f, 0f, fallingRotation);
-
-        float velocity = 0f;
-
-        while (transform.position.y > landingSpot.y)
-        {
-            velocity += gravity * Time.deltaTime;
-            transform.position -= new Vector3(0, velocity * Time.deltaTime, 0);
             yield return null;
         }
 
-        transform.position = landingSpot;
-
-        if (col != null) col.enabled = true;
+        if(col) col.enabled=true;
 
         yield return new WaitForSeconds(impactDelay);
 
-        if (shadowObject != null)
-            shadowObject.SetActive(false);
+        transform.localPosition=originalPos;
+        sr.sprite=originalSprite;
 
-        transform.position = originalPosition;
-        transform.localScale = originalScale;
-        transform.rotation = originalRotation;
+        isAttacking=false;
+    }
 
-        animator.enabled = true;
+    public void ResetSprite()
+    {
+        sr.sprite = originalSprite;
+    }
 
-        isAttacking = false;
+    public void SmallSmash(Vector3 pos)
+    {
+        StartCoroutine(SmashRoutine(pos));
+    }
+
+    public void SpawnMiniHands(Vector3 pos)
+    {
+        if(!miniHandPrefab) return;
+
+        Instantiate(miniHandPrefab,pos+Vector3.left*2,Quaternion.identity);
+        Instantiate(miniHandPrefab,pos+Vector3.right*2,Quaternion.identity);
+    }
+
+    public void SpawnTremors(Vector3 center)
+    {
+        if(!tremorSprite) return;
+
+        Vector2[] dirs =
+        {
+            Vector2.up,Vector2.down,Vector2.left,Vector2.right,
+            new Vector2(1,1).normalized,
+            new Vector2(-1,1).normalized,
+            new Vector2(1,-1).normalized,
+            new Vector2(-1,-1).normalized
+        };
+
+        foreach(Vector2 d in dirs)
+        {
+            GameObject g=new GameObject("Tremor");
+
+            SpriteRenderer s=g.AddComponent<SpriteRenderer>();
+            s.sprite=tremorSprite;
+
+            s.sortingLayerID=sr.sortingLayerID;
+            s.sortingOrder=sr.sortingOrder+1;
+
+            g.transform.position=center + (Vector3)d*1.5f;
+
+            Destroy(g,1f);
+        }
+    }
+
+    public void SpawnQueenRing(Vector3 center)
+    {
+        if(!queenCardSprite) return;
+
+        for(int i=0;i<queenBulletCount;i++)
+        {
+            float angle=i*Mathf.PI*2/queenBulletCount;
+
+            Vector2 dir=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
+
+            GameObject bullet=new GameObject("CardBullet");
+
+            SpriteRenderer s=bullet.AddComponent<SpriteRenderer>();
+            s.sprite=queenCardSprite;
+
+            s.sortingLayerID=sr.sortingLayerID;
+            s.sortingOrder=sr.sortingOrder+1;
+
+            bullet.transform.position=center;
+
+            StartCoroutine(CardMove(bullet,dir));
+        }
+    }
+
+    IEnumerator CardMove(GameObject obj,Vector2 dir)
+    {
+        float life=3;
+
+        while(life>0)
+        {
+            obj.transform.position+=(Vector3)dir*queenBulletSpeed*Time.deltaTime;
+            life-=Time.deltaTime;
+            yield return null;
+        }
+
+        Destroy(obj);
     }
 }
