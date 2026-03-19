@@ -3,15 +3,12 @@ using System.Collections;
 
 public class BossHandAttack : MonoBehaviour
 {
+    [Header("Ground Pound Settings")]
     public float spawnHeight = 6f;
     public float gravity = 40f;
 
-    public float disappearDelay = 0.3f;
-    public float preFallDelay = 0.15f;
-    public float impactDelay = 0.2f;
-
     public Sprite fallingSprite;
-
+    public Sprite jackSprite;
     public GameObject miniHandPrefab;
     public Sprite tremorSprite;
     public Sprite queenCardSprite;
@@ -19,176 +16,193 @@ public class BossHandAttack : MonoBehaviour
     public int queenBulletCount = 16;
     public float queenBulletSpeed = 6f;
 
-    SpriteRenderer sr;
-    Collider2D col;
-    Animator animator;
+    public float tremorSpacing = 1.2f;
+    public int tremorSteps = 8;
+    public LayerMask wallMask;
 
-    Vector3 originalPos;
+    [Header("Idle Motion")]
+    public float idleAmplitude = 0.3f;
+    public float idleSpeed = 1.5f;
+
+    SpriteRenderer sr;
+    Animator anim;
     Sprite originalSprite;
 
-    public float tremorSpeed = 4f;
-public float tremorSpacing = 1.2f;
-public int tremorSteps = 8;
-public LayerMask wallMask;
+    bool smashing = false;
+    bool idleActive = false;
+    bool isClapping = false;
+    Vector3 idleStartPos;
 
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
-        col = GetComponent<Collider2D>();
-        animator = GetComponent<Animator>();
-
-        originalPos = transform.localPosition;
+        anim = GetComponent<Animator>();
         originalSprite = sr.sprite;
+        idleStartPos = transform.localPosition;
     }
 
-    public IEnumerator SmashRoutine(Vector3 landingSpot)
+    void Update()
     {
-        if(animator)
-            animator.SetTrigger("MakeFist");
+        if(idleActive && !smashing && !isClapping)
+        {
+            transform.localPosition = idleStartPos + Vector3.up * Mathf.Sin(Time.time * idleSpeed) * idleAmplitude;
+        }
+    }
 
+    public void StartIdle() => idleActive = true;
+    public void StopIdle() => idleActive = false;
+    public void StartClapOrSmash() => isClapping = true;
+    public void EndClapOrSmash() => isClapping = false;
+
+    public void DisableAnimator() { if(anim) anim.enabled = false; }
+    public void EnableAnimator() { if(anim) anim.enabled = true; }
+    public void SetSprite(Sprite s) => sr.sprite = s;
+    public void ResetSprite() => sr.sprite = originalSprite;
+
+    // Smash (ground pound) is fully local, independent
+    public IEnumerator Smash(Vector3 targetWorld, bool isLeftHand)
+    {
+        if(smashing) yield break;
+        smashing = true;
+        StopIdle();
+        StartClapOrSmash();
+
+        if(anim) anim.SetTrigger("MakeFist");
         yield return new WaitForSeconds(0.5f);
 
-        if(animator) animator.enabled=false;
+        if(anim) anim.enabled = false;
 
-        if(col) col.enabled=false;
+        Vector3 targetLocal = transform.parent.InverseTransformPoint(targetWorld);
+        Vector3 startPos = transform.localPosition;
+        Vector3 aboveTarget = new Vector3(targetLocal.x, targetLocal.y + spawnHeight, 0f);
+        transform.localPosition = aboveTarget;
 
-        Vector3 start = new Vector3(
-            landingSpot.x,
-            landingSpot.y+spawnHeight,
-            transform.position.z);
+        sr.sprite = fallingSprite;
+        transform.localEulerAngles = new Vector3(0,0,isLeftHand?30f:-30f);
 
-        sr.enabled=false;
-        yield return new WaitForSeconds(disappearDelay);
-
-        transform.position=start;
-        sr.enabled=true;
-
-        if(fallingSprite)
-            sr.sprite=fallingSprite;
-
-        yield return new WaitForSeconds(preFallDelay);
-
-        float vel=0;
-
-        while(transform.position.y>landingSpot.y)
+        float vel = 0f;
+        while(transform.localPosition.y > targetLocal.y)
         {
-            vel+=gravity*Time.deltaTime;
-
-            float newY=Mathf.Max(
-                transform.position.y-vel*Time.deltaTime,
-                landingSpot.y);
-
-            transform.position=new Vector3(
-                landingSpot.x,newY,transform.position.z);
-
+            vel += gravity * Time.deltaTime;
+            transform.localPosition += Vector3.down * vel * Time.deltaTime;
             yield return null;
         }
 
-        if(col) col.enabled=true;
+        transform.localPosition = targetLocal;
+        yield return new WaitForSeconds(0.3f);
 
-        yield return new WaitForSeconds(impactDelay);
+        // Reset rotation and position
+        transform.localEulerAngles = Vector3.zero;
+        transform.localPosition = startPos;
+        sr.sprite = originalSprite;
+        if(anim) anim.enabled = true;
 
-        transform.localPosition=originalPos;
+        // Sync idle to this baseline to prevent drift
+        idleStartPos = startPos;
 
-        sr.sprite=originalSprite;
-
-        if(animator) animator.enabled=true;
+        smashing = false;
+        EndClapOrSmash();
+        StartIdle();
     }
 
-    public void SmallSmash(Vector3 pos)
-    {
-        StartCoroutine(SmashRoutine(pos));
-    }
-
-    public void SpawnMiniHands(Vector3 pos)
+    // Mini hands spawn independent of other hand
+    public void SpawnMiniHands(Vector3 pos, bool isLeftHand)
     {
         if(!miniHandPrefab) return;
-
-        Instantiate(miniHandPrefab,pos+Vector3.left*2,Quaternion.identity);
-        Instantiate(miniHandPrefab,pos+Vector3.right*2,Quaternion.identity);
+        float rotation = isLeftHand ? 30f : -30f;
+        for(int i=0;i<2;i++)
+        {
+            Vector3 offset = new Vector3(Random.Range(-2f,2f), Random.Range(-1f,1f),0);
+            Instantiate(miniHandPrefab, pos + offset, Quaternion.Euler(0,0,rotation));
+        }
     }
 
-public void SpawnTremors(Vector3 center)
-{
-    Vector2[] dirs =
+    public void SpawnTremors(Vector3 center)
     {
-        Vector2.up,Vector2.down,Vector2.left,Vector2.right,
-        new Vector2(1,1).normalized,
-        new Vector2(-1,1).normalized,
-        new Vector2(1,-1).normalized,
-        new Vector2(-1,-1).normalized
-    };
-
-    foreach(Vector2 dir in dirs)
-    {
-        StartCoroutine(TremorChain(center,dir));
+        Vector2[] dirs = {
+            Vector2.up, Vector2.down, Vector2.left, Vector2.right,
+            new Vector2(1,1).normalized, new Vector2(-1,1).normalized,
+            new Vector2(1,-1).normalized, new Vector2(-1,-1).normalized
+        };
+        foreach(var d in dirs)
+            StartCoroutine(TremorChain(center,d));
     }
-}
 
-IEnumerator TremorChain(Vector3 start, Vector2 dir)
-{
-    Vector3 pos = start;
-
-    for(int i=0;i<tremorSteps;i++)
+    IEnumerator TremorChain(Vector3 start, Vector2 dir)
     {
-        RaycastHit2D hit = Physics2D.Raycast(pos,dir,tremorSpacing,wallMask);
+        Vector3 pos = start;
+        for(int i=0;i<tremorSteps;i++)
+        {
+            if(Physics2D.Raycast(pos, dir, tremorSpacing, wallMask)) yield break;
+            pos += (Vector3)dir * tremorSpacing;
 
-        if(hit.collider != null)
-            yield break;
+            GameObject g = new GameObject("Tremor");
+            var s = g.AddComponent<SpriteRenderer>();
+            s.sprite = tremorSprite;
+            s.sortingLayerID = sr.sortingLayerID;
+            s.sortingOrder = sr.sortingOrder + 1;
 
-        pos += (Vector3)dir * tremorSpacing;
-
-        GameObject g = new GameObject("Tremor");
-
-        SpriteRenderer s = g.AddComponent<SpriteRenderer>();
-        s.sprite = tremorSprite;
-
-        s.sortingLayerID = sr.sortingLayerID;
-        s.sortingOrder = sr.sortingOrder + 1;
-
-        g.transform.position = pos;
-
-        Destroy(g,1.2f);
-
-        yield return new WaitForSeconds(0.07f);
+            g.transform.position = pos;
+            Destroy(g,1.2f);
+            yield return new WaitForSeconds(0.07f);
+        }
     }
-}
 
     public void SpawnQueenRing(Vector3 center)
     {
         if(!queenCardSprite) return;
-
         for(int i=0;i<queenBulletCount;i++)
         {
-            float angle=i*Mathf.PI*2/queenBulletCount;
+            float a = i * Mathf.PI*2 / queenBulletCount;
+            Vector2 dir = new(Mathf.Cos(a), Mathf.Sin(a));
 
-            Vector2 dir=new Vector2(Mathf.Cos(angle),Mathf.Sin(angle));
+            GameObject b = new GameObject("CardBullet");
+            var s = b.AddComponent<SpriteRenderer>();
+            s.sprite = queenCardSprite;
+            s.sortingLayerID = sr.sortingLayerID;
+            s.sortingOrder = sr.sortingOrder + 1;
 
-            GameObject bullet=new GameObject("CardBullet");
-
-            SpriteRenderer s=bullet.AddComponent<SpriteRenderer>();
-            s.sprite=queenCardSprite;
-
-            s.sortingLayerID=sr.sortingLayerID;
-            s.sortingOrder=sr.sortingOrder+1;
-
-            bullet.transform.position=center;
-
-            StartCoroutine(CardMove(bullet,dir));
+            b.transform.position = center;
+            StartCoroutine(CardMove(b, dir));
         }
     }
 
-    IEnumerator CardMove(GameObject obj,Vector2 dir)
+    IEnumerator CardMove(GameObject obj, Vector2 dir)
     {
-        float life=3;
-
+        float life = 3f;
         while(life>0)
         {
-            obj.transform.position+=(Vector3)dir*queenBulletSpeed*Time.deltaTime;
-            life-=Time.deltaTime;
+            obj.transform.position += (Vector3)dir * queenBulletSpeed * Time.deltaTime;
+            life -= Time.deltaTime;
+            yield return null;
+        }
+        Destroy(obj);
+    }
+
+    public void JackStrike(Vector3 pos)
+    {
+        StartCoroutine(JackFall(pos));
+    }
+
+    IEnumerator JackFall(Vector3 pos)
+    {
+        GameObject g = new GameObject("JackStrike");
+        SpriteRenderer s = g.AddComponent<SpriteRenderer>();
+        s.sprite = jackSprite;
+        s.sortingLayerID = sr.sortingLayerID;
+        s.sortingOrder = sr.sortingOrder + 1;
+
+        Vector3 start = pos + Vector3.up * spawnHeight;
+        g.transform.position = start;
+
+        float vel = 0f;
+        while(g.transform.position.y > pos.y)
+        {
+            vel += gravity * Time.deltaTime;
+            g.transform.position += Vector3.down * vel * Time.deltaTime;
             yield return null;
         }
 
-        Destroy(obj);
+        Destroy(g,0.5f);
     }
 }

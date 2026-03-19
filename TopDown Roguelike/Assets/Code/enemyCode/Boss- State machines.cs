@@ -137,7 +137,7 @@ public class DroneBoss2D : MonoBehaviour
     {
         stateTimer = 0f;
 
-        int choice = Random.Range(0, 1);
+        int choice = Random.Range(0, 5);
         switch (choice)
         {
             case 0: EnterDash(); break;
