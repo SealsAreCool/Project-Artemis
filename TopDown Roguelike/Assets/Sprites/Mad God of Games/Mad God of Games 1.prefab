@@ -53,17 +53,16 @@ MonoBehaviour:
   arenaCenter: {fileID: 0}
   arenaSize: {x: 20, y: 8}
   poundsPerClap: 5
-  timeBetweenPounds: 1.2
+  poundDelay: 1.2
   leftClapSprite: {fileID: 1748760375, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   rightClapSprite: {fileID: -1639192509, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
-  clapSpeed: 10
-  clapHoldTime: 0.6
   cardSprites:
   - {fileID: -1343505764, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   - {fileID: 686090490, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   - {fileID: -244813015, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   - {fileID: 1807124317, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   cardSpacing: 10
+  maskRectSprite: {fileID: 0}
 --- !u!114 &6397265587440886582
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,21 +205,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnHeight: 65
   gravity: 200
-  disappearDelay: 0.8
-  preFallDelay: 1
-  impactDelay: 0.5
   fallingSprite: {fileID: 1532727162, guid: 5f8d01ab4b4e7d34d976100bc3c7b4c2, type: 3}
+  jackSprite: {fileID: 0}
   miniHandPrefab: {fileID: 0}
   tremorSprite: {fileID: -2413806693520163455, guid: a8abd0c8487dd664da47268cb6e1849e, type: 3}
   queenCardSprite: {fileID: 686090490, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   queenBulletCount: 16
   queenBulletSpeed: 6
-  tremorSpeed: 4
   tremorSpacing: 1.2
-  tremorSteps: 8
+  tremorSteps: 20
+  tremorLifetime: 0.5
+  tremorSpawnDelay: 0.2
   wallMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
+  idleAmplitude: 0.3
+  idleSpeed: 1.5
 --- !u!61 &3411627139095839336
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -388,21 +388,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnHeight: 65
   gravity: 200
-  disappearDelay: 0.8
-  preFallDelay: 1
-  impactDelay: 0.5
   fallingSprite: {fileID: -2065786382, guid: 5f8d01ab4b4e7d34d976100bc3c7b4c2, type: 3}
+  jackSprite: {fileID: 0}
   miniHandPrefab: {fileID: 0}
   tremorSprite: {fileID: -2413806693520163455, guid: a8abd0c8487dd664da47268cb6e1849e, type: 3}
   queenCardSprite: {fileID: 686090490, guid: 191f232ac75e47141ae26b1dde943102, type: 3}
   queenBulletCount: 16
   queenBulletSpeed: 6
-  tremorSpeed: 4
   tremorSpacing: 1.2
-  tremorSteps: 8
+  tremorSteps: 20
+  tremorLifetime: 0.6
+  tremorSpawnDelay: 0.2
   wallMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
+  idleAmplitude: 0.3
+  idleSpeed: 1.5
 --- !u!61 &3842386966386608727
 BoxCollider2D:
   m_ObjectHideFlags: 0

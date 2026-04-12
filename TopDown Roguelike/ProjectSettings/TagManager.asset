@@ -12,6 +12,7 @@ TagManager:
   - Bottom
   - Right
   - Left
+  - BossPillar
   layers:
   - Default
   - TransparentFX

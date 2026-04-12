@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 public class StartSceneClick : MonoBehaviour
 {
     [Tooltip("scene to load")]
-    public string sceneToLoad = "MainGame"; 
+    public string sceneToLoad = "BossSelect"; 
 
     void Update()
     {

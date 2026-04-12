@@ -460,7 +460,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 65e2848de249ad942b7df8d29848c14b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  sceneToLoad: MainGame
+  sceneToLoad: BossSelect
 --- !u!1 &1690140300
 GameObject:
   m_ObjectHideFlags: 0

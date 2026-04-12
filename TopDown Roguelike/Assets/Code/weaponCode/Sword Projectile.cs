@@ -74,18 +74,22 @@ else
 
     }
 
-    private void OnTriggerEnter2D(Collider2D col)
+private void OnTriggerEnter2D(Collider2D col)
+{
+    if (col.CompareTag("Enemy") && isLaunched)
     {
-        if (col.CompareTag("Enemy") && isLaunched)
+        col.GetComponent<Enemy>()?.TakeDamage(damage);
+    }
+    else if (col.CompareTag("BossPillar") && isLaunched)
+    {
+        col.GetComponent<BossPillar>()?.TakeDamage(damage);
+    }
+    else if (col.CompareTag("Wall") && isLaunched)
+    {
+        if (!returning && orbitManager != null)
         {
-            col.GetComponent<Enemy>()?.TakeDamage(damage);
-        }
-        else if (col.CompareTag("Wall") && isLaunched)
-        {
-            if (!returning && orbitManager != null)
-            {
-                returning = true;
-            }
+            returning = true;
         }
     }
+}
 }
